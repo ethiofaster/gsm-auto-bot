@@ -1,0 +1,13 @@
+{
+  "name": "gsm-auto-bot",
+  "version": "1.0.0",
+  "description": "GSM Tool Auto Rent Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "puppeteer": "^22.6.0"
+  }
+}
