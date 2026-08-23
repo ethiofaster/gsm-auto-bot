@@ -2,7 +2,6 @@ const TelegramBot = require('node-telegram-bot-api');
 const puppeteer = require('puppeteer');
 const http = require('http');
 
-// Render ሰርቨር እንዳይዘጋ Port መክፈት
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -50,18 +49,33 @@ bot.on('callback_query', async (query) => {
       });
 
       const page = await browser.newPage();
+      await page.setViewport({ width: 1280, height: 800 });
       await page.setCookie(...COOKIES);
+
+      // ወደ ገጹ መግባት
       await page.goto('https://tk-unlocker.com/remote', { waitUntil: 'networkidle2', timeout: 60000 });
 
-      // በተኑን ፈልጎ መጫን
-      await page.waitForSelector('.placeorder', { timeout: 15000 });
-      await page.click('.placeorder');
+      // Order በተኑን መፈለግ እና መጫን
+      const clicked = await page.evaluate(() => {
+        // በተኑን በ class, id ወይም በውስጡ ባለው ጽሑፍ መፈለግ
+        const btn = document.querySelector('.placeorder') || 
+                    document.querySelector('button[type="submit"]') || 
+                    Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"], a')).find(el => /place order|order|submit|ኪራይ/i.test(el.innerText || el.value));
+        if (btn) {
+          btn.click();
+          return true;
+        }
+        return false;
+      });
 
-      // ውጤቱ እስኪወጣ መጠበቅ
-      await new Promise(r => setTimeout(r, 6000));
+      if (!clicked) {
+        throw new Error("የማዘዣው በተን አልተገኘም (Session Expired ሆኖ ሊሆን ይችላል)።");
+      }
+
+      // ውጤቱ እስኪመጣ መጠበቅ
+      await new Promise(r => setTimeout(r, 7000));
 
       const pageText = await page.evaluate(() => document.body.innerText);
-
       await browser.close();
 
       // Username እና Password መፈለግ
