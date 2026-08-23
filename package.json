@@ -1,14 +1,13 @@
 {
   "name": "gsm-auto-bot",
   "version": "1.0.0",
-  "description": "GSM Tool Auto Rent Bot",
+  "description": "GSM Auto Rent Bot via DHRU API",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "start": "node index.js"
   },
   "dependencies": {
-    "node-telegram-bot-api": "^0.66.0",
-    "puppeteer": "^22.6.0"
+    "axios": "^1.7.0",
+    "node-telegram-bot-api": "^0.66.0"
   }
 }
