@@ -13,10 +13,9 @@ http.createServer((req, res) => {
 const botToken = '8801785713:AAGcXXkLaFelzwaFgJx2X2TDjm84ysylVhc';
 const bot = new TelegramBot(botToken, { polling: true });
 
-const COOKIES = [
-  { name: 'DHRUSESS', value: 'q17n54ctp30j6qdgvh5pggi2n9', domain: 'tk-unlocker.com' },
-  { name: 'x-token', value: '2a66a366fc24e5a0b2f2303b2ab9e857e981539a', domain: 'tk-unlocker.com' }
-];
+// 👇 እዚህ ጋር የ TK-Unlocker አካውንትህን Username እና Password አስገባ
+const TK_USERNAME = 'የአንተ_TK_USERNAME_እዚህ_አስገባ';
+const TK_PASSWORD = 'የአንተ_TK_PASSWORD_እዚህ_አስገባ';
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
@@ -50,29 +49,31 @@ bot.on('callback_query', async (query) => {
 
       const page = await browser.newPage();
       await page.setViewport({ width: 1280, height: 800 });
-      await page.setCookie(...COOKIES);
 
-      // ወደ ገጹ መግባት
+      // 1. Login ገጽ መክፈት
+      await page.goto('https://tk-unlocker.com/login', { waitUntil: 'networkidle2', timeout: 60000 });
+
+      // 2. ዩዘርኔም እና ፓስዋርድ አስገብቶ Login ማድረግ
+      await page.type('input[name="username"], input[type="text"], input[type="email"]', TK_USERNAME);
+      await page.type('input[name="password"], input[type="password"]', TK_PASSWORD);
+      
+      await Promise.all([
+        page.keyboard.press('Enter'),
+        page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 60000 }).catch(() => {})
+      ]);
+
+      // 3. ወደ Remote Order ገጽ መሄድ
       await page.goto('https://tk-unlocker.com/remote', { waitUntil: 'networkidle2', timeout: 60000 });
 
-      // Order በተኑን መፈለግ እና መጫን
-      const clicked = await page.evaluate(() => {
-        // በተኑን በ class, id ወይም በውስጡ ባለው ጽሑፍ መፈለግ
+      // 4. Order ማዘዝ
+      await page.evaluate(() => {
         const btn = document.querySelector('.placeorder') || 
                     document.querySelector('button[type="submit"]') || 
-                    Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"], a')).find(el => /place order|order|submit|ኪራይ/i.test(el.innerText || el.value));
-        if (btn) {
-          btn.click();
-          return true;
-        }
-        return false;
+                    Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"], a')).find(el => /place order|order|submit|rent/i.test(el.innerText || el.value));
+        if (btn) btn.click();
       });
 
-      if (!clicked) {
-        throw new Error("የማዘዣው በተን አልተገኘም (Session Expired ሆኖ ሊሆን ይችላል)።");
-      }
-
-      // ውጤቱ እስኪመጣ መጠበቅ
+      // 5. ውጤቱን መጠበቅ
       await new Promise(r => setTimeout(r, 7000));
 
       const pageText = await page.evaluate(() => document.body.innerText);
