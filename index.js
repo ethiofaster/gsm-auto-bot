@@ -1,5 +1,15 @@
 const TelegramBot = require('node-telegram-bot-api');
 const puppeteer = require('puppeteer');
+const http = require('http');
+
+// Render ሰርቨር እንዳይዘጋ Port መክፈት
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('GSM Auto Bot is Running Live 24/7!');
+}).listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
 
 const botToken = '8801785713:AAGcXXkLaFelzwaFgJx2X2TDjm84ysylVhc';
 const bot = new TelegramBot(botToken, { polling: true });
@@ -31,7 +41,12 @@ bot.on('callback_query', async (query) => {
     try {
       browser = await puppeteer.launch({
         headless: "new",
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu'
+        ]
       });
 
       const page = await browser.newPage();
